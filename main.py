@@ -270,13 +270,13 @@ class MainWindow(QMainWindow):
         else:
             self.urlbar.setText(q.toString())
 
-def main():
-    app = QApplication(sys.argv)
-    app.setApplicationName('GDP Browser')
-    app_icon = QIcon('icons/icon1.png')
-    app.setWindowIcon(app_icon)
-    window = MainWindow()
-    Thread(target=initial, daemon=True, ).start()
-    app.exec_()
-    for x in calls:
-        kill(x)
+
+app = QApplication(sys.argv)
+app.setApplicationName('GDP Browser')
+app_icon = QIcon('icons/icon1.png')
+app.setWindowIcon(app_icon)
+window = MainWindow()
+Thread(target=initial, daemon=True, ).start()
+app.exec_()
+for x in calls:
+    kill(x)
