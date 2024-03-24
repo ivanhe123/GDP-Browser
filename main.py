@@ -40,52 +40,67 @@ def initial():
 
     @app.route('/<url>/<ident>/<redirection>')
     def hello2(url, ident, redirection):
-        server = 'gitcode.net'
-        try:
-            domain = ident + '/' + url
-            print(running_pages)
-            for x in running_pages:
-                if x == url.split('/')[0]:
-                    running = True
-                    break
+        servers = open("server.txt",'r').readlines()
+        try_lens = len(servers)
+        for server,x in enumerate(servers):
+            server = server.replace("\n","")
+            try:
+                domain = ident + '/' + url
+                print(running_pages)
+                for x in running_pages:
+                    if x == url.split('/')[0]:
+                        running = True
+                        break
+                    else:
+                        running = False
+                if running:
+                    return redirect('http://localhost:' + str(
+                        json.load(open(os.path.join(os.path.join('browser_cache', domain), 'config.json')))[
+                            'port']) + redirection.replace('@', '/'))
                 else:
-                    running = False
-            if running:
-                return redirect('http://localhost:' + str(
-                    json.load(open(os.path.join(os.path.join('browser_cache', domain), 'config.json')))[
-                        'port']) + redirection.replace('@', '/'))
-            else:
-                print(os.path.exists(os.path.join('browser_cache', domain)))
-                if not os.path.exists(os.path.join('browser_cache', domain)):
-                    clone_url = 'git@' + server + ':' + domain + '.git'
-                    git.clone(clone_url, os.path.join('browser_cache',domain))
-                cmd = json.load(open(os.path.join(os.path.join('browser_cache', domain), 'config.json')))['start_command']
-                path = os.path.join('browser_cache', domain)
-                call_noconsole('powershell -Command cd ' + path + ';' + cmd)
+                    print(os.path.exists(os.path.join('browser_cache', domain)))
+                    if not os.path.exists(os.path.join('browser_cache', domain)):
+                        clone_url = 'git@' + server + ':' + domain + '.git'
+                        git.clone(clone_url, os.path.join('browser_cache',domain))
+                    cmd = json.load(open(os.path.join(os.path.join('browser_cache', domain), 'config.json')))['start_command']
+                    path = os.path.join('browser_cache', domain)
+                    call_noconsole('powershell -Command cd ' + path + ';' + cmd)
 
-                running_pages.append(url.split('/')[0])
+                    running_pages.append(url.split('/')[0])
 
-                while True:
-                    try:
-                        requests.get('http://localhost:' + str(
-                            json.load(open(os.path.join('browser_cache', domain) + '/config.json'))['port']))
-                    except:
-                        continue
-                    break
-                return redirect('http://localhost:' + str(
-                    json.load(open(os.path.join(os.path.join('browser_cache', domain), 'config.json')))[
-                        'port']) + '/' + redirection.replace('@', '/'))
-        except HangupException:
-                return f"""<!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>{ident}:{url}.gdpn{redirection.replace('@','/')}</title>
-                    </head>
-                    <body>
-                    <h1>OOPS</h1> <h3> Something went wrong </h3> <p> Be sure you entered the correct GDP link in the address bar, check your network connection, and retry </p>
-                    </body>
-                    </html>"""
+                    while True:
+                        try:
+                            requests.get('http://localhost:' + str(
+                                json.load(open(os.path.join('browser_cache', domain) + '/config.json'))['port']))
+                        except:
+                            continue
+                        break
+                    return redirect('http://localhost:' + str(
+                        json.load(open(os.path.join(os.path.join('browser_cache', domain), 'config.json')))[
+                            'port']) + '/' + redirection.replace('@', '/'))
+            except HangupException:
+                if x == try_lens-1:
+                    return f"""<!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>{ident}:{url}.gdpn{redirection.replace('@','/')}</title>
+                        </head>
+                        <body>
+                        <h1>OOPS</h1> <h3> Something went wrong </h3> <p> Be sure you entered the correct GDP link in the address bar, check your network connection, and retry </p>
+                        </body>
+                        </html>"""
+                else:
+                    return f"""<!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>{ident}:{url}.gdpn{redirection.replace('@','/')}</title>
+                        </head>
+                        <body>
+                        <h1>OOPS</h1> <h3> The webpage is not in this server, trying other servers... </h3>
+                        </body>
+                        </html>"""
     app.run(host='127.0.0.1', port=8765)
 
 
@@ -238,8 +253,9 @@ class MainWindow(QMainWindow):
         q = QUrl(self.urlbar.text())
         url = self.urlbar.text()
         if url.split('/')[0].endswith('.gdpn'):
-            server = 'github.com'
+
             domain = url.split(':')[1].split('/')[0].replace('.gdpn','')
+            print(domain)
             if '/' in url:
                 url_re = 'http://127.0.0.1:8765/' + domain + '/' + url.split(':')[0] + '/' + url.split(':')[1].replace(domain+'.gdpn', '').replace('/', '@')
             else:
@@ -269,7 +285,6 @@ class MainWindow(QMainWindow):
 
         else:
             self.urlbar.setText(q.toString())
-
 
 app = QApplication(sys.argv)
 app.setApplicationName('GDP Browser')
