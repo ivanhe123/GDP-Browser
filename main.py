@@ -10,8 +10,8 @@ import json
 import os
 from flask import Flask, redirect
 import requests
-from pkl import porcelain as git
-from pkl.errors import HangupException
+from dulwich import porcelain as git
+from dulwich.errors import HangupException
 from PyQt5.QtGui import QIcon
 import psutil
 
