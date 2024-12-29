@@ -285,7 +285,8 @@ class MainWindow(QMainWindow):
 
         else:
             self.urlbar.setText(q.toString())
-
+if not os.path.exists("browser_cache"):
+    os.mkdir("browser_cache")
 app = QApplication(sys.argv)
 app.setApplicationName('GDP Browser')
 app_icon = QIcon('icons/icon1.png')
